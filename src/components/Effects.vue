@@ -76,13 +76,16 @@ export default {
   data () {
     return {
       effects: [],
+      effectsAply: [],
+      storeBase64: [],
+      firstBase64: '',
       model: ref(null),
       intensidade: 50,
       desfoque: 1,
       isVisibleDesfoque: false,
       isVisibleBrigth: false,
       effect: '',
-      image: []
+      image: ''
     }
   },
   methods: {
@@ -93,12 +96,11 @@ export default {
       a.click() // Downloaded file
     },
     slide (data) {
-      const dataForm = new FormData()
-      dataForm.append('content_image', this.image[0])
-
       const param = data === 'intensidade' ? this.intensidade : this.desfoque
 
-      api.post('efeitos?efeito=' + this.effect + '&intensidade=' + param, dataForm).then(data => {
+      api.post('efeitos?efeito=' + this.effect + '&intensidade=' + param, {
+        code: this.image.toString()
+      }).then(data => {
         emitter.emit('event-name', data.data)
       }).catch(err => {
         console.log(err)
@@ -106,32 +108,43 @@ export default {
     },
 
     isVisible (data) {
-      let param = 100
-      if (data === 'Desfoque') {
-        this.isVisibleDesfoque = true
-        this.isVisibleBrigth = false
-        param = this.desfoque
-        document.getElementById('menu').style.height = window.innerHeight - 297 + 'px'
-      } else if (data === 'Ajuste brilho') {
-        this.isVisibleBrigth = true
-        this.isVisibleDesfoque = false
-        param = this.intensidade
-        document.getElementById('menu').style.height = window.innerHeight - 297 + 'px'
-      } else {
-        this.isVisibleDesfoque = false
-        this.isVisibleBrigth = false
-        document.getElementById('menu').style.height = window.innerHeight - 217 + 'px'
-      }
-      this.effect = data
+      if (!this.effectsAply.includes(data)) {
+        let param = 100
+        if (data === 'Desfoque') {
+          this.isVisibleDesfoque = true
+          this.isVisibleBrigth = false
+          param = this.desfoque
+          document.getElementById('menu').style.height = window.innerHeight - 297 + 'px'
+        } else if (data === 'Ajuste brilho') {
+          this.isVisibleBrigth = true
+          this.isVisibleDesfoque = false
+          param = this.intensidade
+          document.getElementById('menu').style.height = window.innerHeight - 297 + 'px'
+        } else {
+          this.isVisibleDesfoque = false
+          this.isVisibleBrigth = false
+          document.getElementById('menu').style.height = window.innerHeight - 217 + 'px'
+        }
+        this.effect = data
 
-      const dataForm = new FormData()
-      dataForm.append('content_image', this.image[0])
-      console.log(dataForm)
-      api.post('efeitos?efeito=' + data + '&intensidade=' + param, dataForm).then(data => {
-        emitter.emit('event-name', data.data)
-      }).catch(err => {
-        console.log(err)
-      })
+        api.post('efeitos?efeito=' + data + '&intensidade=' + param, {
+          code: this.image.toString()
+        }).then(data => {
+          this.effectsAply.push(this.effect)
+          this.storeBase64.push({
+            effects: this.effectsAply,
+            base64: data.data
+          })
+          console.table(this.storeBase64)
+          this.image = data.data
+          emitter.emit('effectsAply', this.effectsAply)
+          emitter.emit('event-name', this.image)
+        }).catch(err => {
+          console.log(err)
+        })
+      } else {
+        console.log(this.effectsAply)
+      }
     }
   },
   mounted () {
@@ -144,8 +157,23 @@ export default {
   },
   created () {
     emitter.on('input', async data => {
-      this.image = []
-      this.image.push(data)
+      this.image = ''
+      this.image = data.split('base64,')[1]
+      this.firstBase64 = data.split('base64,')[1]
+    })
+    emitter.on('removeEffect', async data => {
+      if (data.length === 0) {
+        this.image = this.firstBase64
+        emitter.emit('event-name', this.image)
+      } else {
+        for (const iterator of this.storeBase64) {
+          console.log(iterator.effects)
+        }
+        console.log(this.storeBase64.filter(f => f.effects === data))
+        console.log(data)
+        // console.log(this.storeBase64.find(f => f.effects === data))
+      }
+      this.effectsAply = data
     })
   }
 

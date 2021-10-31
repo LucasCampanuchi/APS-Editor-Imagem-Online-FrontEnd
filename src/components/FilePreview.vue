@@ -52,9 +52,28 @@
                     </q-card>
                 </div>
             </div>
-
         </q-card-section>
+    </q-card>
+    <q-card flat bordered class="my-card q-mt-lg" style="width: 100%;" v-if="effectsAply.length > 0">
+      <q-card-section style="width: 100%;">
+        <div class="row">
+          <div class="col-lg-2 col-md-2 col-xs-6 q-pa-xs btnStates"  v-for="o in this.effectsAply" :key="o" >
+              <q-card flat bordered class="my-card" >
+                <q-card-section class="cardSection">
+                  <div class="row" style="width: 100%">
+                    <div class="col-10 colEsq">
+                      <p style="display: contents;">{{o}}</p>
+                    </div>
+                    <div class="col-2 colDir">
+                      <q-btn flat size="xs" round color="primary" icon="close" @click="remove(o)" />
+                    </div>
+                  </div>
+                </q-card-section>
+              </q-card>
 
+          </div>
+        </div>
+      </q-card-section>
     </q-card>
 
   </div>
@@ -69,7 +88,8 @@ export default {
   data () {
     return {
       previewImage: null,
-      fileName: ''
+      fileName: '',
+      effectsAply: []
     }
   },
   mounted () {
@@ -78,6 +98,10 @@ export default {
     document.getElementById('imagem').style.maxHeight = parseInt(document.getElementById('tam1').style.height) - 60 + 'px'
   },
   methods: {
+    remove (data) {
+      this.effectsAply = this.effectsAply.filter(f => f !== data)
+      emitter.emit('removeEffect', this.effectsAply)
+    },
     limpar () {
       this.fileName = ''
       this.previewImage = null
@@ -105,10 +129,9 @@ export default {
         }
         reader.onload = e => {
           this.previewImage = e.target.result
-          console.log(e.target.result)
+          emitter.emit('input', e.target.result)
         }
         reader.readAsDataURL(file[0])
-        emitter.emit('input', file[0])
       }
     }
   },
@@ -118,6 +141,10 @@ export default {
     emitter.on('event-name', async data => {
       console.log('data')
       this.previewImage = 'data:image/jpg;base64,' + data
+    })
+    emitter.on('effectsAply', async data => {
+      console.log(data)
+      this.effectsAply = data
     })
   }
 }
