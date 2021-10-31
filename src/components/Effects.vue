@@ -126,6 +126,7 @@ export default {
 
       const dataForm = new FormData()
       dataForm.append('content_image', this.image[0])
+      console.log(dataForm)
       api.post('efeitos?efeito=' + data + '&intensidade=' + param, dataForm).then(data => {
         emitter.emit('event-name', data.data)
       }).catch(err => {

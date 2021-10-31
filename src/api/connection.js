@@ -8,7 +8,6 @@ const api = axios.create({
       'Access-Control-Allow-Origin': '*'
     }
   }
-
 })
 
 export { api }

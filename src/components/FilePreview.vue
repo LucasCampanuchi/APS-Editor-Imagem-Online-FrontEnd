@@ -96,8 +96,16 @@ export default {
 
       if (file && file[0]) {
         const reader = new FileReader()
+
+        reader.onprogress = function (data) {
+          if (data.lengthComputable) {
+            const progress = parseInt(((data.loaded / data.total) * 100), 10)
+            console.log(progress)
+          }
+        }
         reader.onload = e => {
           this.previewImage = e.target.result
+          console.log(e.target.result)
         }
         reader.readAsDataURL(file[0])
         emitter.emit('input', file[0])
