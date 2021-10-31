@@ -106,7 +106,6 @@ export default {
         console.log(err)
       })
     },
-
     isVisible (data) {
       if (!this.effectsAply.includes(data)) {
         let param = 100
@@ -132,10 +131,9 @@ export default {
         }).then(data => {
           this.effectsAply.push(this.effect)
           this.storeBase64.push({
-            effects: this.effectsAply,
+            effects: JSON.stringify(this.effectsAply),
             base64: data.data
           })
-          console.table(this.storeBase64)
           this.image = data.data
           emitter.emit('effectsAply', this.effectsAply)
           emitter.emit('event-name', this.image)
@@ -165,15 +163,41 @@ export default {
       if (data.length === 0) {
         this.image = this.firstBase64
         emitter.emit('event-name', this.image)
+        this.effectsAply = []
+        emitter.emit('effectsAply', this.effectsAply)
       } else {
-        for (const iterator of this.storeBase64) {
-          console.log(iterator.effects)
+        const tempBase = this.storeBase64.find(f => f.effects === JSON.stringify(data))
+        if (tempBase !== undefined) {
+          this.image = tempBase.base64
+          this.effectsAply = data
+          emitter.emit('event-name', this.image)
+          emitter.emit('effectsAply', this.effectsAply)
+        } else {
+          /* console.log(data.length)
+          for (let i = 0; i < data.length; i++) {
+            let tempImage = ''
+            if (i === 0) {
+              tempImage = this.firstBase64
+            } else {
+              tempImage = this.image
+            }
+            api.post('efeitos?efeito=' + data[i] + '&intensidade=100', {
+              code: tempImage
+            }).then(a => {
+              this.image = a.data
+              this.effectsAply = data
+              this.storeBase64.push({
+                effects: JSON.stringify(data),
+                base64: this.image
+              })
+              emitter.emit('effectsAply', this.effectsAply)
+              emitter.emit('event-name', this.image)
+            }).catch(err => {
+              console.log(err)
+            })
+          } */
         }
-        console.log(this.storeBase64.filter(f => f.effects === data))
-        console.log(data)
-        // console.log(this.storeBase64.find(f => f.effects === data))
       }
-      this.effectsAply = data
     })
   }
 

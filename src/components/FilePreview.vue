@@ -57,14 +57,14 @@
     <q-card flat bordered class="my-card q-mt-lg" style="width: 100%;" v-if="effectsAply.length > 0">
       <q-card-section style="width: 100%;">
         <div class="row">
-          <div class="col-lg-2 col-md-2 col-xs-6 q-pa-xs btnStates"  v-for="o in this.effectsAply" :key="o" >
+          <div class="col-lg-2 col-md-2 col-xs-6 q-pa-xs btnStates"  v-for="(o, i) in this.effectsAply" :key="o" >
               <q-card flat bordered class="my-card" >
                 <q-card-section class="cardSection">
                   <div class="row" style="width: 100%">
                     <div class="col-10 colEsq">
                       <p style="display: contents;">{{o}}</p>
                     </div>
-                    <div class="col-2 colDir">
+                    <div class="col-2 colDir" v-if="i === this.effectsAply.length -1">
                       <q-btn flat size="xs" round color="primary" icon="close" @click="remove(o)" />
                     </div>
                   </div>
@@ -99,8 +99,12 @@ export default {
   },
   methods: {
     remove (data) {
-      this.effectsAply = this.effectsAply.filter(f => f !== data)
-      emitter.emit('removeEffect', this.effectsAply)
+      if (this.effectsAply[this.effectsAply.length - 1] === data) {
+        this.effectsAply = this.effectsAply.filter(f => f !== data)
+        emitter.emit('removeEffect', this.effectsAply)
+      } else {
+        console.log('NAO')
+      }
     },
     limpar () {
       this.fileName = ''
@@ -139,11 +143,9 @@ export default {
     /* this.$parent.$on('update', this.previewImage) */
     /* this.$emit.$on('update', this.setValue) */
     emitter.on('event-name', async data => {
-      console.log('data')
       this.previewImage = 'data:image/jpg;base64,' + data
     })
     emitter.on('effectsAply', async data => {
-      console.log(data)
       this.effectsAply = data
     })
   }
