@@ -52,7 +52,7 @@ module.exports = configure(function (ctx) {
 
       env: ctx.dev
         ? {
-            API: 'http://localhost/'
+            API: 'http://192.168.100.24/'
           }
         : {
             API: 'http://localhost:90/'
